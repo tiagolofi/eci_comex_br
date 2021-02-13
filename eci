@@ -1,0 +1,28 @@
+
+require(tidyverse)
+require(economiccomplexity)
+require(magrittr)
+
+options(scipen = 999)
+
+## Referências 
+
+## Mariani M, Vidmer A, Medo M, Zhang Y (2015). 
+## “Measuring economic complexity of countries and products: which metric to use?” 
+## The European Physical Journal B, 88(11), 293. doi: 10.1140/epjb/e2015602987.
+
+## 1. Baixar os dados do comércio exterior e calcular a matriz municípios x produtos
+
+expbr2018 <- rio::import("https://balanca.economia.gov.br/balanca/bd/comexstat-bd/mun/EXP_2018_MUN.csv")
+
+data <- expbr2018 %>%
+  filter(str_sub(CO_MUN, end = 2) %in% 21:29) %>% 
+  group_by(CO_MUN, SH4) %>% 
+  summarise(VALOR = sum(VL_FOB, na.rm = T)) %>% 
+  rename("country" = "CO_MUN",
+         "product" = "SH4",
+         "value" = "VALOR")
+         
+matriz2018 <- balassa_index(data)
+
+complexity_measures(matriz2018)$complexity_index_country %>% View()
